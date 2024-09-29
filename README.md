@@ -1,5 +1,7 @@
 # eco_tvy
 
+> 스프링 부트에 Dist 파일 떨어뜨리는 작업까지 진행 예정
+
 This template should help get you started developing with Vue 3 in Vite.
 
 ## Recommended IDE Setup
