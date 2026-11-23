@@ -1,0 +1,38 @@
+/*
+ * 전역 스타일: 폰트와 Vuetify 타이포그래피 보정만 둔다.
+ * 색은 여기서 정하지 않고 plugins/vuetify.js의 테마 토큰(rgb(var(--v-theme-*)))을 쓴다.
+ */
+
+:root {
+  --app-font: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, 'Apple SD Gothic Neo',
+    'Noto Sans KR', 'Malgun Gothic', sans-serif;
+}
+
+html,
+body,
+.v-application {
+  font-family: var(--app-font);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  word-break: keep-all; /* 한글 단어 중간에서 줄바꿈되지 않도록 */
+}
+
+/* Vuetify 타이포그래피 클래스는 Roboto를 직접 지정하므로 앱 폰트로 덮는다 */
+.v-application [class*='text-h'],
+.v-application [class*='text-subtitle'],
+.v-application [class*='text-body'],
+.v-application .text-caption,
+.v-application .text-overline,
+.v-application .text-button,
+.v-btn,
+.v-card-title,
+.v-list-item-title,
+.v-tab {
+  font-family: var(--app-font) !important;
+  letter-spacing: -0.01em !important;
+}
+
+/* 숫자는 고정폭 숫자로 (Lv, 횟수, 거리 등 정렬) */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
