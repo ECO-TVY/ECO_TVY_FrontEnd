@@ -28,3 +28,11 @@ coverage
 *.sw?
 
 *.tsbuildinfo
+
+# build/mdiIcons.js가 dev/build 때마다 생성
+src/plugins/icons.generated.js
+
+# 로컬 환경 변수 (카카오 키 등). 예시는 .env.example
+.env
+.env.*
+!.env.example
