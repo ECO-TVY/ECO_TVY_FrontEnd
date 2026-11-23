@@ -5,8 +5,9 @@ const unwrap = (res) => res.data.data
 
 export const fetchMe = () => http.get('/api/users/me').then(unwrap)
 
-export const fetchHistory = (page = 0, size = 20) =>
-  http.get('/api/history', { params: { page, size } }).then(unwrap)
+/** @param wasteType 종류 필터 (예: 'PLASTIC'). 생략하면 전체. 서버는 size를 최대 100으로 제한 */
+export const fetchHistory = (page = 0, size = 20, wasteType) =>
+  http.get('/api/history', { params: { page, size, wasteType: wasteType || undefined } }).then(unwrap)
 
 export const fetchDisposalPoints = (latitude, longitude, radiusKm = 2) =>
   http.get('/api/location/disposal-points', { params: { latitude, longitude, radiusKm } }).then(unwrap)
@@ -35,8 +36,9 @@ export function classifyWaste(file, { onUploadProgress, signal } = {}) {
 export const reportMisclassification = (id, correctType) =>
   http.post(`/api/history/${id}/report`, null, { params: { correctType } }).then(unwrap)
 
-export const updateProfile = ({ nickname, address, detailAddress }) =>
-  http.put('/api/users/me/profile', { nickname, address, detailAddress }).then(unwrap)
+/** 주소를 바꿀 때는 latitude/longitude도 함께 보내 한 번에 저장한다 (둘 다 보내거나 둘 다 생략) */
+export const updateProfile = ({ nickname, address, detailAddress, latitude, longitude }) =>
+  http.put('/api/users/me/profile', { nickname, address, detailAddress, latitude, longitude }).then(unwrap)
 
 export const updateLocation = (latitude, longitude) =>
   http.put('/api/users/me/location', null, { params: { latitude, longitude } })

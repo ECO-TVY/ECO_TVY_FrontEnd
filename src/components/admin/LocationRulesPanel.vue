@@ -242,8 +242,14 @@ const headers = [
   { title: '', key: 'actions', sortable: false, align: 'end', width: 100 }
 ]
 
-const [defCity = '', defDistrict = '', defDong = ''] = props.defaultAddress.split(' ')
-const area = reactive({ city: defCity, district: defDistrict, dong: defDong })
+/** 백엔드 AddressParts.parse와 같은 규칙 (세 조각 미만이면 빈 값) */
+function splitAddress(address) {
+  const t = (address || '').trim().split(/\s+/).filter(Boolean)
+  if (t.length < 3) return { city: '', district: '', dong: '' }
+  return { city: t[0], district: t.slice(1, -1).join(' '), dong: t[t.length - 1] }
+}
+
+const area = reactive(splitAddress(props.defaultAddress))
 const loadedArea = ref(null)
 const rules = ref([])
 const loading = ref(false)
@@ -360,8 +366,8 @@ async function save() {
 }
 
 /**
- * 주소 검색으로 지역 채우기. 백엔드는 사용자 주소("대전 대덕구 오정동")를 공백으로 나눠
- * 앞 세 조각을 시/구/동으로 쓰므로 같은 방식으로 나눈다.
+ * 주소 검색으로 지역 채우기. 백엔드(AddressParts)와 같은 규칙으로 나눈다:
+ * 첫 단어 = 시도, 마지막 단어 = 동, 그 사이 = 시군구 ("경기 수원시 영통구 매탄동" → 시군구 "수원시 영통구")
  */
 async function openAreaSearch() {
   areaSearchOpen.value = true
@@ -369,8 +375,7 @@ async function openAreaSearch() {
   await nextTick() // dialog 내용이 그려진 뒤 embed
   try {
     const picked = await searchAddress(areaSearchEl.value)
-    const [city = '', district = '', dong = ''] = picked.address.split(' ')
-    Object.assign(area, { city, district, dong })
+    Object.assign(area, splitAddress(picked.address))
     areaSearchOpen.value = false
     load()
   } catch (e) {

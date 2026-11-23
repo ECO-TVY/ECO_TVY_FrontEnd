@@ -51,7 +51,7 @@
 <script setup>
 import { ref, watch } from 'vue'
 import { useDisplay } from 'vuetify'
-import { updateLocation, updateProfile } from '@/api/endpoints'
+import { updateProfile } from '@/api/endpoints'
 import { toErrorMessage } from '@/api/http'
 import AddressPicker from '@/components/common/AddressPicker.vue'
 
@@ -94,16 +94,15 @@ async function save() {
   saving.value = true
   errorMessage.value = ''
   try {
-    // 좌표를 먼저 바꾼다: 프로필만 바뀌고 좌표가 실패하면 주소와 좌표가 어긋나므로
-    if (selected.value) {
-      await updateLocation(selected.value.latitude, selected.value.longitude)
-    }
+    // 주소·좌표·닉네임을 한 요청으로 저장 (서버에서 한 트랜잭션 → 주소와 좌표가 어긋나지 않음)
     const updated = await updateProfile({
       nickname: nickname.value.trim(),
       address: selected.value?.address,
       detailAddress: selected.value
         ? [selected.value.roadAddress, detail.value.trim()].filter(Boolean).join(' ')
-        : undefined
+        : undefined,
+      latitude: selected.value?.latitude,
+      longitude: selected.value?.longitude
     })
     emit('saved', updated)
     open.value = false

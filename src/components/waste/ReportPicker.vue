@@ -59,14 +59,16 @@ const props = defineProps({
   currentType: { type: String, default: '' },
   /** 신뢰도가 낮을 때 처음부터 펼쳐 둔다 */
   startOpen: Boolean,
-  prompt: { type: String, default: '실제 종류를 골라 주세요.' }
+  prompt: { type: String, default: '실제 종류를 골라 주세요.' },
+  /** 서버가 이미 신고된 기록이라고 알려 준 경우 (중복 신고는 서버에서도 거부) */
+  alreadyReported: Boolean
 })
 const emit = defineEmits(['reported'])
 
 const open = ref(props.startOpen)
 const correctType = ref(null)
 const sending = ref(false)
-const reported = ref(false)
+const reported = ref(props.alreadyReported)
 const error = ref('')
 
 const otherTypes = computed(() => WASTE_TYPES.filter((t) => t.value !== props.currentType))
@@ -77,7 +79,7 @@ watch(
   () => {
     open.value = props.startOpen
     correctType.value = null
-    reported.value = false
+    reported.value = props.alreadyReported
     error.value = ''
   }
 )

@@ -19,7 +19,7 @@
       <ErrorState v-else-if="error" :message="error" @retry="emit('retry')" />
       <EmptyState v-else-if="!items.length" icon="mdi-history" text="첫 번째 쓰레기를 분류해 보세요!" dense />
       <v-list v-else class="pa-0" lines="two">
-        <HistoryListItem v-for="h in items" :key="h.id" :item="h" @click="emit('select', h)" />
+        <HistoryListItem v-for="h in items" :key="h.id" :item="h" :reported="!!h.reported" @click="emit('select', h)" />
       </v-list>
     </v-card-text>
   </v-card>

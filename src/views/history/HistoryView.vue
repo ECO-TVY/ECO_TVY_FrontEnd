@@ -5,18 +5,18 @@
       <h1 class="text-h5 font-weight-bold">분류 기록</h1>
     </div>
 
-    <!-- 종류 필터: 서버 필터가 없어 불러온 기록 안에서만 거른다 -->
-    <v-chip-group v-model="filter" class="mb-2" selected-class="text-primary" mandatory>
+    <!-- 종류 필터: 서버에서 거르므로 아직 불러오지 않은 옛 기록까지 찾는다 -->
+    <v-chip-group v-model="filter" class="mb-2" selected-class="text-primary" mandatory @update:model-value="reload">
       <v-chip value="ALL" variant="outlined" filter>전체</v-chip>
       <v-chip
-        v-for="t in typesInHistory"
+        v-for="t in WASTE_TYPES"
         :key="t.value"
         :value="t.value"
         :prepend-icon="t.icon"
         variant="outlined"
         filter
       >
-        {{ t.label }} {{ counts[t.value] }}
+        {{ t.label }}
       </v-chip>
     </v-chip-group>
 
@@ -32,7 +32,7 @@
         <template v-if="!items.length && !loading">
           <div class="text-center text-medium-emphasis py-12">
             <v-icon icon="mdi-history" size="48" class="mb-2" />
-            <div class="text-body-2 mb-4">아직 분류한 기록이 없어요.</div>
+            <div class="text-body-2 mb-4">{{ filter === 'ALL' ? '아직 분류한 기록이 없어요.' : '이 종류로 분류한 기록이 없어요.' }}</div>
             <v-btn color="primary" :to="{ name: 'home' }" prepend-icon="mdi-camera-outline">
               첫 사진 분류하기
             </v-btn>
@@ -47,15 +47,12 @@
               :key="h.id"
               :item="h"
               time-only
-              :reported="reportedIds.has(h.id)"
+              :reported="h.reported || reportedIds.has(h.id)"
               @click="openDetail(h)"
             />
           </v-list>
         </template>
 
-        <div v-if="filter !== 'ALL' && items.length && !groups.length" class="text-center text-medium-emphasis py-8 text-body-2">
-          불러온 기록 중 해당 종류가 없어요.
-        </div>
 
         <template #loading>
           <v-skeleton-loader type="list-item-avatar-two-line@3" class="w-100" />
@@ -95,20 +92,12 @@ const scrollKey = ref(0)
 const filter = ref('ALL')
 const detailOpen = ref(false)
 const selected = ref(null)
-// 기록 응답에 신고 여부가 없어 이번 세션에서 신고한 것만 표시
+// 서버 응답의 reported + 이 화면에서 방금 신고한 것
 const reportedIds = reactive(new Set())
 
-const counts = computed(() => {
-  const c = {}
-  for (const h of items.value) c[h.wasteType] = (c[h.wasteType] || 0) + 1
-  return c
-})
-const typesInHistory = computed(() => WASTE_TYPES.filter((t) => counts.value[t.value]))
-
 const groups = computed(() => {
-  const list = filter.value === 'ALL' ? items.value : items.value.filter((h) => h.wasteType === filter.value)
   const out = []
-  for (const h of list) {
+  for (const h of items.value) {
     const key = dayKey(h.createdAt)
     let g = out[out.length - 1]
     if (!g || g.key !== key) {
@@ -124,7 +113,7 @@ const groups = computed(() => {
 async function loadMore({ done }) {
   loading.value = true
   try {
-    const batch = await fetchHistory(page.value, PAGE_SIZE)
+    const batch = await fetchHistory(page.value, PAGE_SIZE, filter.value === 'ALL' ? undefined : filter.value)
     // 같은 기록이 두 번 들어오지 않게 (새 분류로 페이지 경계가 밀리는 경우)
     const seen = new Set(items.value.map((h) => h.id))
     items.value.push(...batch.filter((h) => !seen.has(h.id)))

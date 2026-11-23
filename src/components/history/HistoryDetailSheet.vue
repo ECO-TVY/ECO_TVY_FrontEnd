@@ -40,14 +40,14 @@
           </v-chip>
         </div>
 
-        <!-- 기록 응답에는 배출 시간이 없어 요일 기준으로만 판단 -->
-        <DisposalStatus :day="item.disposalDay" class="mb-4" />
+        <DisposalStatus :day="item.disposalDay" :time="item.disposalTime" class="mb-4" />
         <DisposalGuide :guide="item.disposalGuide" />
 
         <v-divider class="my-4" />
         <ReportPicker
           :classification-id="item.id"
           :current-type="item.wasteType"
+          :already-reported="!!item.reported"
           @reported="emit('reported', item.id)"
         />
       </v-card-text>
